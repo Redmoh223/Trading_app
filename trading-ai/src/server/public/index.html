@@ -3,159 +3,331 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trading AI — Dashboard</title>
+  <title>TRADING AI — TERMINAL</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    :root {
+      --bg: #0a0a0a;
+      --panel: #121212;
+      --border: #333333;
+      --text: #cccccc;
+      --green: #00ff41;
+      --green-dim: #00802b;
+      --red: #ff3131;
+      --red-dim: #800000;
+      --amber: #ffbf00;
+      --blue: #0099ff;
+      --mono: 'Courier New', Courier, monospace;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; background: #0b1120; color: #e2e8f0; padding: 0; }
 
-    /* Header */
-    header { background: #111827; border-bottom: 1px solid #1f2937; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.25rem; color: #38bdf8; }
-    .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      height: 100%;
+      overflow: hidden;
+    }
 
-    .header-stats { display: flex; gap: 24px; font-size: 0.875rem; }
-    .stat { display: flex; flex-direction: column; gap: 2px; }
-    .stat .label { color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; }
-    .stat .val { font-weight: 700; font-family: ui-monospace, SFMono-Regular, monospace; }
+    /* ===== HEADER ===== */
+    header {
+      background: #151515;
+      border-bottom: 2px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
 
-    /* Layout principal */
-    main { padding: 24px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
-    @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--green);
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
 
-    /* Panneau latéral : commandes */
-    aside { display: flex; flex-direction: column; gap: 16px; }
-    .card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 18px; }
-    .card h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .brand .dot {
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 1.5s infinite;
+    }
 
-    /* Formulaire ordre */
-    .order-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
-    @media (max-width: 480px) { .order-form { grid-template-columns: 1fr; } }
-    .order-form input, .order-form select { padding: 10px 12px; border: 1px solid #374151; border-radius: 6px; background: #0b1120; color: #e2e8f0; font-size: 0.9rem; }
-    .order-form button { padding: 10px 20px; border: none; border-radius: 6px; background: #3b82f6; color: #fff; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
-    .order-form button:hover { background: #2563eb; }
-    #orderMsg { grid-column: 1 / -1; font-size: 0.8rem; margin-top: 6px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    /* Résumé rapide */
-    .quick-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .qs-item { background: #0b1120; border: 1px solid #1f2937; border-radius: 6px; padding: 10px; }
-    .qs-item .k { font-size: 0.7rem; color: #94a3b8; }
-    .qs-item .v { font-weight: 700; font-family: ui-monospace, monospace; font-size: 0.9rem; }
+    .header-right { display: flex; gap: 24px; align-items: center; font-size: 11px; }
 
-    /* Zone principale : cartes + graphique + tableaux */
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-    @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
-    .chart-card { grid-column: 1 / -1; }
+    .stat-chip {
+      display: flex; align-items: center; gap: 6px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 3px;
+      background: var(--panel);
+    }
 
-    .status-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-    .status-chip.paper { background: #1e3a8a; color: #bfdbfe; border: 1px solid #3b82f6; }
-    .status-chip.live { background: #451a03; color: #fcd34d; border: 1px solid #b45309; }
+    .stat-chip.pending { color: var(--amber); border-color: var(--amber); }
+    .stat-chip.ok { color: var(--green); border-color: var(--green); }
+    .stat-chip.alert { color: var(--red); border-color: var(--red); }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.85rem; }
-    th { text-align: left; padding: 8px 6px; color: #94a3b8; border-bottom: 1px solid #1f2937; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    td { padding: 8px 6px; border-bottom: 1px solid #111827; }
-    tr:hover td { background: #111827; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; }
-    .badge.buy { background: #1e3a8a; color: #bfdbfe; }
-    .badge.sell { background: #451a03; color: #fcd34d; }
-    .positive { color: #22c55e; }
-    .negative { color: #ef4444; }
-    .neutral { color: #94a3b8; }
-    .muted { color: #64748b; font-size: 0.8rem; }
-    canvas { width: 100% !important; height: 260px !important; background: #111827; border-radius: 8px; border: 1px solid #1f2937; }
+    /* ===== TICKER ===== */
+    .ticker-wrap {
+      background: #000;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      height: 24px;
+    }
 
-    footer { margin-top: 20px; font-size: 0.75rem; color: #64748b; text-align: center; }
+    .ticker {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: ticker 30s linear infinite;
+      color: var(--text);
+      font-size: 11px;
+    }
+
+    @keyframes ticker { 0%{transform: translate3d(0,0,0)} 100%{transform: translate3d(-100%,0,0)} }
+
+    .ticker-item {
+      display: inline-block;
+      padding: 0 24px;
+      border-right: 1px solid var(--border);
+    }
+
+    .ticker-sym { color: var(--blue); font-weight: 700; margin-right: 6px; }
+    .ticker-up { color: var(--green); }
+    .ticker-down { color: var(--red); }
+
+    /* ===== LAYOUT ===== */
+    .shell {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      height: calc(100vh - 80px);
+      background: var(--border);
+      padding: 1px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel.wide { grid-column: span 2; }
+
+    .panel-header {
+      background: #1a1a1a;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--amber);
+      font-weight: 700;
+    }
+
+    .panel-body { flex: 1; overflow: auto; padding: 10px; }
+
+    /* ===== QUICK STATS (top left panel) ===== */
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+    .stat-item { background: #0d0d0d; border: 1px solid var(--border); padding: 8px; text-align: center; }
+    .stat-item .lbl { font-size: 9px; color: #666; margin-bottom: 2px; }
+    .stat-item .val { font-size: 14px; font-weight: 700; }
+
+    .val.pos { color: var(--green); }
+    .val.neg { color: var(--red); }
+    .val.neu { color: var(--amber); }
+
+    /* ===== ORDER FORM ===== */
+    .order-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: end; }
+    @media (max-width: 700px) { .order-form { grid-template-columns: 1fr; } }
+
+    .order-form input,
+    .order-form select {
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      padding: 6px 8px;
+      font-size: 12px;
+      border-radius: 2px;
+    }
+
+    .order-form button {
+      background: var(--green);
+      color: #000;
+      border: none;
+      padding: 6px 14px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .order-form button:hover { background: var(--green-dim); }
+    .order-form button:active { transform: scale(0.98); }
+
+    #orderMsg {
+      grid-column: 1 / -1;
+      font-size: 10px;
+      margin-top: 4px;
+      min-height: 14px;
+    }
+
+    /* ===== TABLES ===== */
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th {
+      background: #1a1a1a;
+      color: var(--amber);
+      text-align: left;
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+    td { padding: 5px 8px; border-bottom: 1px solid #1a1a1a; }
+    tr:hover td { background: #1a1a1a; }
+
+    .badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge.buy { background: #003300; color: var(--green); border: 1px solid var(--green); }
+    .badge.sell { background: #330000; color: var(--red); border: 1px solid var(--red); }
+
+    .badge.status-filled { color: var(--green); }
+    .badge.status-pending { color: var(--amber); }
+    .badge.status-rejected { color: var(--red); }
+
+    /* ===== CHART ===== */
+    .chart-wrap { position: relative; height: 100%; }
+    canvas { width: 100% !important; height: 100% !important; background: #0d0d0d; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #151515;
+      border-top: 1px solid var(--border);
+      padding: 6px 16px;
+      font-size: 10px;
+      color: #666;
+      text-align: center;
+    }
+
+    /* ===== UTILS ===== */
+    .hidden { display: none !important; }
+    .blink { animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .terminal-prompt { color: var(--green); margin-right: 6px; }
+
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand"><span class="dot"></span> Trading AI Dashboard</div>
-    <div class="header-stats">
-      <div class="stat"><div class="label">Mode</div><div class="val" id="modeVal">—</div></div>
-      <div class="stat"><div class="label">Valeur totale</div><div class="val" id="headerTotal">$0.00</div></div>
-      <div class="stat"><div class="label">PnL journalier</div><div class="val neutral" id="headerPnl">$0.00</div></div>
+
+<header>
+  <div class="brand"><span class="dot"></span> TRADING AI TERMINAL</div>
+  <div class="header-right">
+    <div class="stat-chip ok" id="modeChip"><span>●</span> PAPER TRADING</div>
+    <div class="stat-chip pending" id="wsChip"><span>●</span> WS CONNECTING</div>
+    <div class="stat-chip neu" id="clockChip">00:00:00</div>
+  </div>
+</header>
+
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker"></div>
+</div>
+
+<div class="shell">
+  <!-- Left Top: Orders + Stats -->
+  <div class="panel">
+    <div class="panel-header">NEW ORDER</div>
+    <div class="panel-body">
+      <form id="orderForm" class="order-form">
+        <input type="text" id="orderSymbol" placeholder="SYM" value="AAPL" maxlength="6"/>
+        <select id="orderSide">
+          <option value="buy">BUY</option>
+          <option value="sell">SELL</option>
+        </select>
+        <input type="number" id="orderQty" placeholder="QTY" value="1" min="1" step="1"/>
+        <button type="submit">EXECUTE</button>
+      </form>
+      <span id="orderMsg"></span>
     </div>
-  </header>
+  </div>
 
-  <main>
-    <aside>
-      <div class="card">
-        <h2>Nouvel Ordre</h2>
-        <form id="orderForm" class="order-form">
-          <input type="text" id="orderSymbol" placeholder="Symbole" value="AAPL" maxlength="10"/>
-          <select id="orderSide">
-            <option value="buy">Acheter</option>
-            <option value="sell">Vendre</option>
-          </select>
-          <input type="number" id="orderQty" placeholder="Qty" value="1" min="1" step="1"/>
-          <button type="submit">Placer</button>
-          <span id="orderMsg"></span>
-        </form>
+  <!-- Right Top: Quick Stats -->
+  <div class="panel wide">
+    <div class="panel-header">PORTFOLIO SNAPSHOT</div>
+    <div class="panel-body">
+      <div class="stat-grid">
+        <div class="stat-item"><div class="lbl">TOTAL VALUE</div><div class="val neu" id="totalValue">$0.00</div></div>
+        <div class="stat-item"><div class="lbl">CASH</div><div class="val neu" id="cash">$0.00</div></div>
+        <div class="stat-item"><div class="lbl">P&L UNREALIZED</div><div class="val neu" id="unrealizedPnl">$0.00</div></div>
+        <div class="stat-item"><div class="lbl">P&L REALIZED</div><div class="val neu" id="realizedPnl">$0.00</div></div>
+        <div class="stat-item"><div class="lbl">P&L DAILY</div><div class="val neu" id="dailyPnl">$0.00</div></div>
+        <div class="stat-item"><div class="lbl">POSITIONS</div><div class="val neu" id="qsPositions">0</div></div>
       </div>
+    </div>
+  </div>
 
-      <div class="card">
-        <h2>Résumé rapide</h2>
-        <div class="quick-stats">
-          <div class="qs-item"><div class="k">Cash</div><div class="v neutral" id="qsCash">$0.00</div></div>
-          <div class="qs-item"><div class="k">Positions</div><div class="v" id="qsPositions">0</div></div>
-        </div>
-      </div>
-    </aside>
+  <!-- Left Bottom: Positions -->
+  <div class="panel">
+    <div class="panel-header">POSITIONS</div>
+    <div class="panel-body">
+      <table id="positionsTable">
+        <thead><tr><th>SYMBOL</th><th>SIDE</th><th>QTY</th><th>AVG ENTRY</th><th>CURRENT</th><th>P&L</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="hidden" id="positionsEmpty" style="color:#666;">No positions</p>
+    </div>
+  </div>
 
-    <section>
-      <div class="grid">
-        <div class="card">
-          <h2>Valeur Totale</h2>
-          <div class="val" style="font-size:2rem;" id="totalValue">$0.00</div>
-        </div>
-        <div class="card">
-          <h2>Cash Disponible</h2>
-          <div class="val neutral" style="font-size:2rem;" id="cash">$0.00</div>
-        </div>
-        <div class="card">
-          <h2>PnL Non Réalisé</h2>
-          <div class="val neutral" style="font-size:2rem;" id="unrealizedPnl">$0.00</div>
-        </div>
-        <div class="card">
-          <h2>PnL Réalisé</h2>
-          <div class="val neutral" style="font-size:2rem;" id="realizedPnl">$0.00</div>
-        </div>
-        <div class="card">
-          <h2>PnL Journalier</h2>
-          <div class="val neutral" style="font-size:2rem;" id="dailyPnl">$0.00</div>
-        </div>
-      </div>
+  <!-- Right Bottom: Orders + Chart -->
+  <div class="panel wide">
+    <div class="panel-header">RECENT ORDERS</div>
+    <div class="panel-body" style="display:flex; flex-direction:column; gap:8px;">
+      <table id="ordersTable" style="font-size:10px;">
+        <thead><tr><th>TIME</th><th>SYMBOL</th><th>SIDE</th><th>QTY</th><th>PRICE</th><th>STATUS</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="hidden" id="ordersEmpty" style="color:#666;">No orders</p>
+    </div>
+  </div>
 
-      <div class="card chart-card">
-        <h2>Évolution du PnL Journalier</h2>
-        <canvas id="pnlChart"></canvas>
-      </div>
+  <!-- Bottom wide: Chart -->
+  <div class="panel wide">
+    <div class="panel-header">P&L CHART (REAL-TIME)</div>
+    <div class="panel-body chart-wrap">
+      <canvas id="pnlChart"></canvas>
+    </div>
+  </div>
+</div>
 
-      <div class="grid">
-        <div class="card">
-          <h2>Positions Ouvertes</h2>
-          <table id="positionsTable">
-            <thead><tr><th>Symbole</th><th>Côté</th><th>Qty</th><th>Prix Moyen</th><th>Prix Actuel</th><th>PnL</th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <p class="muted" id="positionsEmpty" style="margin-top:8px;">Aucune position ouverte</p>
-        </div>
-        <div class="card">
-          <h2>Ordres Récents</h2>
-          <table id="ordersTable">
-            <thead><tr><th>Heure</th><th>Symbole</th><th>Côté</th><th>Qty</th><th>Prix</th><th>Statut</th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <p class="muted" id="ordersEmpty" style="margin-top:8px;">Aucun ordre récent</p>
-        </div>
-      </div>
-    </section>
-  </main>
+<footer>
+  <span class="terminal-prompt">&gt;</span> MODE: PAPER &nbsp;|&nbsp; DATA: SIMULATED &nbsp;|&nbsp; NO REAL MONEY AT RISK &nbsp;|&nbsp; TRADING AI TERMINAL v1.0
+</footer>
 
-  <footer>Mode paper trading — aucune transaction avec argent réel. Données simulées.</footer>
-
-  <script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
